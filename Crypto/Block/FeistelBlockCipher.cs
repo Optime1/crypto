@@ -3,7 +3,7 @@ namespace Crypto.Block;
 /// <summary>
 /// Abstract base class for Feistel block ciphers.
 /// </summary>
-public abstract class FeistelBlockCipher
+public abstract class FeistelBlockCipher : IBlockCipher
 {
     private readonly IKeySchedule _keySchedule;
     private readonly IRoundFunction _roundFunction;
@@ -15,21 +15,31 @@ public abstract class FeistelBlockCipher
         _keySchedule = keySchedule;
         _roundFunction = roundFunction;
         _blockSize = blockSize;
+
+        if (blockSize % 2 != 0)
+        {
+            throw new ArgumentException("Block size must be a multiple of two", nameof(blockSize));
+        }
     }
 
-    /// <summary>
-    /// Encrypts a plaintext block.
-    /// </summary>
-    /// <param name="plaintext">The plaintext to encrypt.</param>
-    /// <param name="key">The encryption key.</param>
-    /// <returns>The ciphertext.</returns>
-    public virtual byte[] Encrypt(byte[] plaintext, byte[] key)
+    public int BlockSize() => _blockSize;
+
+    public void Init(byte[] key)
+    {
+        ArgumentNullException.ThrowIfNull(key, nameof(key));
+        _roundKeys = _keySchedule.RoundKeys(key);
+    }
+
+    public virtual byte[] Encrypt(byte[] plaintext)
     {
         ArgumentNullException.ThrowIfNull(plaintext, nameof(plaintext));
-        ArgumentNullException.ThrowIfNull(key, nameof(key));
 
-        _roundKeys = _keySchedule.GenerateRoundKeys(key);
+        if (_roundKeys == null)
+            throw new InvalidOperationException("Cipher is not initialized");
+        if (plaintext.Length != _blockSize)
+            throw new ArgumentException("Invalid block size", nameof(plaintext));
 
+        // (1) Split the block into two equal parts.
         int halfSize = _blockSize / 2;
         byte[] left = new byte[halfSize];
         byte[] right = new byte[halfSize];
@@ -37,63 +47,70 @@ public abstract class FeistelBlockCipher
         Array.Copy(plaintext, 0, left, 0, halfSize);
         Array.Copy(plaintext, halfSize, right, 0, halfSize);
 
-        for (int i = 0; i < _roundKeys.Length; i++)
+        // (2) For each round compute:
+        //   - L_i+1 = R_i
+        //   - R_i+1 = L_i xor F(R_i, K_i)
+        foreach (byte[] roundKey in _roundKeys)
         {
-            byte[] newLeft = right;
-            byte[] newRight = Xor(left, _roundFunction.Apply(right, _roundKeys[i]));
-            left = newLeft;
-            right = newRight;
+            byte[] rNew = new byte[right.Length];
+            byte[] f = _roundFunction.Apply(right, roundKey);
+
+            for (int k = 0; k < rNew.Length; k++)
+            {
+                rNew[k] = (byte)(left[k] ^ f[k]);
+            }
+
+            left = right;
+            right = rNew;
         }
 
-        byte[] result = new byte[_blockSize];
-        Array.Copy(right, 0, result, 0, halfSize);
-        Array.Copy(left, 0, result, halfSize, halfSize);
+        // (3) The ciphertext is (R_n+1, L_n+1).
+        byte[] ciphertext = new byte[_blockSize];
+        Array.Copy(right, 0, ciphertext, 0, right.Length);
+        Array.Copy(left, 0, ciphertext, right.Length, left.Length);
 
-        return result;
+        return ciphertext;
     }
 
-    /// <summary>
-    /// Decrypts a ciphertext block.
-    /// </summary>
-    /// <param name="ciphertext">The ciphertext to decrypt.</param>
-    /// <param name="key">The decryption key.</param>
-    /// <returns>The plaintext.</returns>
-    public virtual byte[] Decrypt(byte[] ciphertext, byte[] key)
+    public virtual byte[] Decrypt(byte[] ciphertext)
     {
         ArgumentNullException.ThrowIfNull(ciphertext, nameof(ciphertext));
-        ArgumentNullException.ThrowIfNull(key, nameof(key));
 
-        _roundKeys = _keySchedule.GenerateRoundKeys(key);
+        if (_roundKeys == null)
+            throw new InvalidOperationException("Cipher is not initialized");
+        if (ciphertext.Length != _blockSize)
+            throw new ArgumentException("Invalid block size", nameof(ciphertext));
 
+        // (1) Split the block into two equal parts.
         int halfSize = _blockSize / 2;
-        byte[] left = new byte[halfSize];
         byte[] right = new byte[halfSize];
+        byte[] left = new byte[halfSize];
 
-        Array.Copy(ciphertext, 0, left, 0, halfSize);
-        Array.Copy(ciphertext, halfSize, right, 0, halfSize);
+        Array.Copy(ciphertext, 0, right, 0, halfSize);
+        Array.Copy(ciphertext, halfSize, left, 0, halfSize);
 
+        // (2) For each round compute:
+        //   - R_i = R_i+1
+        //   - L_i = R_i+1 xor F(L_i+1, K_i)
         for (int i = _roundKeys.Length - 1; i >= 0; i--)
         {
-            byte[] newLeft = right;
-            byte[] newRight = Xor(left, _roundFunction.Apply(right, _roundKeys[i]));
-            left = newLeft;
-            right = newRight;
+            byte[] lNew = new byte[left.Length];
+            byte[] f = _roundFunction.Apply(left, _roundKeys[i]);
+
+            for (int k = 0; k < lNew.Length; k++)
+            {
+                lNew[k] = (byte)(right[k] ^ f[k]);
+            }
+
+            right = left;
+            left = lNew;
         }
 
-        byte[] result = new byte[_blockSize];
-        Array.Copy(right, 0, result, 0, halfSize);
-        Array.Copy(left, 0, result, halfSize, halfSize);
+        // (3) The plaintext is (L_0, R_0).
+        byte[] plaintext = new byte[_blockSize];
+        Array.Copy(left, 0, plaintext, 0, left.Length);
+        Array.Copy(right, 0, plaintext, left.Length, right.Length);
 
-        return result;
-    }
-
-    private static byte[] Xor(byte[] a, byte[] b)
-    {
-        byte[] result = new byte[a.Length];
-        for (int i = 0; i < a.Length; i++)
-        {
-            result[i] = (byte)(a[i] ^ b[i]);
-        }
-        return result;
+        return plaintext;
     }
 }
