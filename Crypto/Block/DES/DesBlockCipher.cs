@@ -51,13 +51,14 @@ public sealed class DesBlockCipher : FeistelBlockCipher
     /// <param name="plaintext">The 8-byte plaintext to encrypt.</param>
     /// <param name="key">The 8-byte encryption key.</param>
     /// <returns>The 8-byte ciphertext.</returns>
-    public override byte[] Encrypt(byte[] plaintext, byte[] key)
+    public byte[] Encrypt(byte[] plaintext, byte[] key)
     {
         ArgumentNullException.ThrowIfNull(plaintext, nameof(plaintext));
         ArgumentNullException.ThrowIfNull(key, nameof(key));
 
+        Init(key);
         byte[] permuted = Permutations.Permute(plaintext, IP);
-        byte[] encrypted = base.Encrypt(permuted, key);
+        byte[] encrypted = base.Encrypt(permuted);
         return Permutations.Permute(encrypted, FP);
     }
 
@@ -67,13 +68,14 @@ public sealed class DesBlockCipher : FeistelBlockCipher
     /// <param name="ciphertext">The 8-byte ciphertext to decrypt.</param>
     /// <param name="key">The 8-byte decryption key.</param>
     /// <returns>The 8-byte plaintext.</returns>
-    public override byte[] Decrypt(byte[] ciphertext, byte[] key)
+    public byte[] Decrypt(byte[] ciphertext, byte[] key)
     {
         ArgumentNullException.ThrowIfNull(ciphertext, nameof(ciphertext));
         ArgumentNullException.ThrowIfNull(key, nameof(key));
 
+        Init(key);
         byte[] permuted = Permutations.Permute(ciphertext, IP);
-        byte[] decrypted = base.Decrypt(permuted, key);
+        byte[] decrypted = base.Decrypt(permuted);
         return Permutations.Permute(decrypted, FP);
     }
 }

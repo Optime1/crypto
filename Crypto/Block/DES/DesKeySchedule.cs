@@ -50,7 +50,7 @@ public sealed class DesKeySchedule : IKeySchedule
     /// </summary>
     /// <param name="key">The 8-byte (64-bit) master key.</param>
     /// <returns>An array of 16 round keys, each 6 bytes long.</returns>
-    public byte[][] GenerateRoundKeys(byte[] key)
+    public byte[][] RoundKeys(byte[] key)
     {
         ArgumentNullException.ThrowIfNull(key, nameof(key));
 
