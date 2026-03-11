@@ -46,30 +46,28 @@ namespace Crypto.Block.Rijndael
 
         public enum KeySize
         {
-            Key128(16),
-            Key192(24),
-            Key256(32);
-
-            private readonly int _bytes;
-
-            KeySize(int bytes) => _bytes = bytes;
-
-            public int Bytes() => _bytes;
-            public int Words() => _bytes / 4;
+            Key128 = 16,
+            Key192 = 24,
+            Key256 = 32
         }
 
         public enum BlockSize
         {
-            Block128(16),
-            Block192(24),
-            Block256(32);
-
-            private readonly int _bytes;
-
-            BlockSize(int bytes) => _bytes = bytes;
-
-            public int Bytes() => _bytes;
-            public int Words() => _bytes / 4;
+            Block128 = 16,
+            Block192 = 24,
+            Block256 = 32
         }
+    }
+
+    public static class KeySizeExtensions
+    {
+        public static int Bytes(this RijndaelParameters.KeySize size) => (int)size;
+        public static int Words(this RijndaelParameters.KeySize size) => (int)size / 4;
+    }
+
+    public static class BlockSizeExtensions
+    {
+        public static int Bytes(this RijndaelParameters.BlockSize size) => (int)size;
+        public static int Words(this RijndaelParameters.BlockSize size) => (int)size / 4;
     }
 }
