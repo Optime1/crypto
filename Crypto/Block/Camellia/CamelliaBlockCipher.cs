@@ -2,10 +2,6 @@ using System;
 
 namespace Crypto.Block.Camellia
 {
-    /// <summary>
-    /// Camellia block cipher implementation per RFC 3713.
-    /// Supports 128, 192, and 256-bit keys.
-    /// </summary>
     public sealed class CamelliaBlockCipher : IBlockCipher
     {
         private readonly int _keySizeBytes;
@@ -39,7 +35,7 @@ namespace Crypto.Block.Camellia
             if (plaintext.Length != BlockSize())
                 throw new ArgumentException($"Block size must be {BlockSize()} bytes", nameof(plaintext));
 
-            return ProcessBlock(plaintext, encrypt: true);
+            return ProcessBlock(plaintext, true);
         }
 
         public byte[] Decrypt(byte[] ciphertext)
@@ -49,7 +45,7 @@ namespace Crypto.Block.Camellia
             if (ciphertext.Length != BlockSize())
                 throw new ArgumentException($"Block size must be {BlockSize()} bytes", nameof(ciphertext));
 
-            return ProcessBlock(ciphertext, encrypt: false);
+            return ProcessBlock(ciphertext, false);
         }
 
         private byte[] ProcessBlock(byte[] input, bool encrypt)
@@ -57,21 +53,16 @@ namespace Crypto.Block.Camellia
             ulong vl = BytesToUlong(input, 0);
             ulong vr = BytesToUlong(input, 8);
 
-            // Initial whitening
             vl ^= _subKeys![0];
             vr ^= _subKeys[1];
 
             int keyIdx = 2;
             for (int i = 1; i <= _rounds; i++)
             {
-                // R = L ^ F(R, K), then swap
                 ulong f = F(vr, _subKeys[keyIdx++]);
                 vl ^= f;
-
-                // Swap vl and vr
                 (vl, vr) = (vr, vl);
 
-                // Apply FL/FLINV after rounds 6, 12, and 18 (for 192/256-bit keys)
                 if ((_rounds == 18 && (i == 6 || i == 12)) ||
                     (_rounds == 24 && (i == 6 || i == 12 || i == 18)))
                 {
@@ -83,10 +74,8 @@ namespace Crypto.Block.Camellia
                 }
             }
 
-            // Undo last swap
             (vl, vr) = (vr, vl);
 
-            // Final whitening
             vl ^= _subKeys[keyIdx++];
             vr ^= _subKeys[keyIdx];
 
@@ -99,11 +88,9 @@ namespace Crypto.Block.Camellia
 
         private ulong[] KeySchedule(byte[] key)
         {
-            // Parse KL (128 bits)
             ulong klL = BytesToUlong(key, 0);
             ulong klR = BytesToUlong(key, 8);
-            
-            // Parse KR (0, 64, or 128 bits depending on key size)
+
             ulong krL, krR;
             if (_keySizeBytes == 16)
             {
@@ -120,22 +107,19 @@ namespace Crypto.Block.Camellia
                 krR = BytesToUlong(key, 24);
             }
 
-            // KA = Sigma(KL XOR KR) XOR KL
             ulong sigmaInL = klL ^ krL;
             ulong sigmaInR = klR ^ krR;
             var sigmaOut = Sigma(sigmaInL, sigmaInR);
-            ulong kaL = sigmaOut.Item1 ^ klL;
-            ulong kaR = sigmaOut.Item2 ^ klR;
+            ulong kaL = sigmaOut.Item1;
+            ulong kaR = sigmaOut.Item2;
 
             int totalKeys = _rounds + 4;
             ulong[] subKeys = new ulong[totalKeys];
             int ki = 0;
 
-            // KW1, KW2
             subKeys[ki++] = klL;
             subKeys[ki++] = klR;
 
-            // Helper for 128-bit rotation
             static (ulong, ulong) Rot128(ulong lo, ulong hi, int shift)
             {
                 shift &= 127;
@@ -155,10 +139,8 @@ namespace Crypto.Block.Camellia
                 }
             }
 
-            // Generate schedule based on key size
             if (_keySizeBytes == 16)
             {
-                // 128-bit key: 18 rounds
                 var k = Rot128(klL, klR, 0); subKeys[ki++] = k.Item1;
                 k = Rot128(klL, klR, 15); subKeys[ki++] = k.Item1;
                 k = Rot128(kaL, kaR, 15); subKeys[ki++] = k.Item1;
@@ -173,17 +155,15 @@ namespace Crypto.Block.Camellia
                 k = Rot128(kaL, kaR, 94); subKeys[ki++] = k.Item1;
                 k = Rot128(klL, klR, 94); subKeys[ki++] = k.Item1;
                 k = Rot128(klL, klR, 111); subKeys[ki++] = k.Item1;
-                k = Rot128(klL, klR, 111); subKeys[ki++] = k.Item1;
-                k = Rot128(klL, klR, 128); subKeys[ki++] = k.Item1;
+                k = Rot128(kaL, kaR, 111); subKeys[ki++] = k.Item1;
                 k = Rot128(kaL, kaR, 128); subKeys[ki++] = k.Item1;
-                k = Rot128(kaL, kaR, 145); subKeys[ki++] = k.Item1;
-                // KW3, KW4
+                k = Rot128(klL, klR, 128); subKeys[ki++] = k.Item1;
+                k = Rot128(klL, klR, 145); subKeys[ki++] = k.Item1;
                 k = Rot128(klL, klR, 60); subKeys[ki++] = k.Item1;
-                k = Rot128(klL, klR, 60); subKeys[ki] = k.Item2;
+                subKeys[ki] = k.Item2;
             }
             else
             {
-                // 192/256-bit key: 24 rounds
                 var k = Rot128(klL, klR, 0); subKeys[ki++] = k.Item1;
                 k = Rot128(klL, klR, 15); subKeys[ki++] = k.Item1;
                 k = Rot128(kaL, kaR, 15); subKeys[ki++] = k.Item1;
@@ -194,23 +174,22 @@ namespace Crypto.Block.Camellia
                 k = Rot128(kaL, kaR, 60); subKeys[ki++] = k.Item1;
                 k = Rot128(krL, krR, 30); subKeys[ki++] = k.Item1;
                 k = Rot128(krL, krR, 45); subKeys[ki++] = k.Item1;
-                k = Rot128(kaL, kaR, 60); subKeys[ki++] = k.Item2;
                 k = Rot128(kaL, kaR, 77); subKeys[ki++] = k.Item2;
-                k = Rot128(klL, klR, 60); subKeys[ki++] = k.Item2;
-                k = Rot128(klL, klR, 77); subKeys[ki++] = k.Item2;
-                k = Rot128(krL, krR, 60); subKeys[ki++] = k.Item1;
-                k = Rot128(krL, krR, 77); subKeys[ki++] = k.Item1;
                 k = Rot128(kaL, kaR, 94); subKeys[ki++] = k.Item2;
-                k = Rot128(kaL, kaR, 111); subKeys[ki++] = k.Item2;
-                k = Rot128(krL, krR, 94); subKeys[ki++] = k.Item2;
-                k = Rot128(krL, krR, 111); subKeys[ki++] = k.Item2;
+                k = Rot128(klL, klR, 77); subKeys[ki++] = k.Item2;
                 k = Rot128(klL, klR, 94); subKeys[ki++] = k.Item2;
-                k = Rot128(klL, klR, 111); subKeys[ki++] = k.Item2;
+                k = Rot128(krL, krR, 77); subKeys[ki++] = k.Item1;
+                k = Rot128(krL, krR, 94); subKeys[ki++] = k.Item1;
+                k = Rot128(kaL, kaR, 111); subKeys[ki++] = k.Item2;
                 k = Rot128(kaL, kaR, 128); subKeys[ki++] = k.Item2;
+                k = Rot128(krL, krR, 111); subKeys[ki++] = k.Item2;
+                k = Rot128(krL, krR, 128); subKeys[ki++] = k.Item2;
+                k = Rot128(klL, klR, 111); subKeys[ki++] = k.Item2;
+                k = Rot128(klL, klR, 128); subKeys[ki++] = k.Item2;
                 k = Rot128(kaL, kaR, 145); subKeys[ki++] = k.Item2;
-                // KW3, KW4
+                k = Rot128(kaL, kaR, 162); subKeys[ki++] = k.Item2;
                 k = Rot128(krL, krR, 60); subKeys[ki++] = k.Item1;
-                k = Rot128(krL, krR, 60); subKeys[ki] = k.Item2;
+                subKeys[ki] = k.Item2;
             }
 
             return subKeys;
@@ -222,7 +201,6 @@ namespace Crypto.Block.Camellia
             byte[] sIn = UlongToBytes(temp);
             byte[] sOut = new byte[8];
 
-            // S-layer
             sOut[0] = CamelliaConstants.S1[sIn[0]];
             sOut[1] = CamelliaConstants.S2[sIn[1]];
             sOut[2] = CamelliaConstants.S3[sIn[2]];
@@ -296,15 +274,13 @@ namespace Crypto.Block.Camellia
             UlongToBytes(xHigh, input, 8);
 
             byte[] output = new byte[16];
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 16; i++)
                 output[i] = CamelliaConstants.S1[input[i]];
-            for (int i = 8; i < 16; i++)
-                output[i] = CamelliaConstants.S2[input[i]];
 
             ulong outLow = PTransform(output);
             ulong outHigh = PTransform(output, 8);
 
-            return (outLow ^ xLow, outHigh ^ xHigh);
+            return (outLow, outHigh);
         }
 
         private ulong PTransform(byte[] input, int offset)
@@ -324,8 +300,6 @@ namespace Crypto.Block.Camellia
             return ((ulong)z1 << 56) | ((ulong)z2 << 48) | ((ulong)z3 << 40) | ((ulong)z4 << 32) |
                    ((ulong)z5 << 24) | ((ulong)z6 << 16) | ((ulong)z7 << 8) | z8;
         }
-
-        #region Helpers
 
         private static ulong BytesToUlong(byte[] data, int offset)
         {
@@ -360,7 +334,5 @@ namespace Crypto.Block.Camellia
 
         private static uint ROL(uint x, int n) => (x << n) | (x >> (32 - n));
         private static uint ROR(uint x, int n) => (x >> n) | (x << (32 - n));
-
-        #endregion
     }
 }
