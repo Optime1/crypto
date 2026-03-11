@@ -21,7 +21,7 @@ namespace Crypto.Block.Camellia
         _rounds = keySizeBits == 128 ? 18 : 24;
     }
 
-    public int BlockSize => 16; // 128 bits
+    public int BlockSize() => 16; // 128 bits
 
     public void Init(byte[] key)
     {
@@ -239,14 +239,14 @@ namespace Crypto.Block.Camellia
         return y;
     }
 
-    private ulong PTransform(byte[] input)
+    private ulong PTransform(byte[] input, int offset = 0)
     {
         // P-function: linear diffusion
         byte[] outBytes = new byte[8];
         
         // Extract words
-        uint y1 = input[0], y2 = input[1], y3 = input[2], y4 = input[3];
-        uint y5 = input[4], y6 = input[5], y7 = input[6], y8 = input[7];
+        uint y1 = input[offset], y2 = input[offset + 1], y3 = input[offset + 2], y4 = input[offset + 3];
+        uint y5 = input[offset + 4], y6 = input[offset + 5], y7 = input[offset + 6], y8 = input[offset + 7];
 
         uint z1 = y1 ^ y3 ^ y4 ^ y6 ^ y7 ^ y8;
         uint z2 = y1 ^ y2 ^ y4 ^ y5 ^ y7 ^ y8;
@@ -324,11 +324,11 @@ namespace Crypto.Block.Camellia
             output[i] = CamelliaConstants.S2[input[i]];
 
         // P-transform on each 64-bit half
-        ulong outLow = PTransform(output);
-        ulong outHigh = PTransform(output, offset: 8); // Need overload or split
+        ulong outLow = PTransform(output, 0);
+        ulong outHigh = PTransform(output, 8);
 
         // For brevity, returning a simple transform
-        return (xLow ^ 0xAAAAAAAAAAAAAAAA, xHigh ^ 0x5555555555555555); // Placeholder
+        return (outLow ^ xLow, outHigh ^ xHigh);
     }
 
     #region Helpers
