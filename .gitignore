@@ -1,17 +1,19 @@
-```gitignore
+```
 # Build artifacts
-*.exe
+bin/
+obj/
 *.dll
+*.exe
 *.pdb
-*.obj
-*.lib
 *.so
 *.dylib
+*.class
 
 # Dependencies
 packages/
-bin/
-obj/
+node_modules/
+venv/
+.venv/
 
 # Logs
 *.log
@@ -31,7 +33,7 @@ obj/
 .DS_Store
 Thumbs.db
 
-# Coverage
+# Testing
 coverage/
 htmlcov/
 .coverage
@@ -45,14 +47,4 @@ htmlcov/
 *.xz
 *.7z
 *.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
 ```

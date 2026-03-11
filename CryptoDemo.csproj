@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>CryptoDemo</RootNamespace>
+    <StartupObject>CryptoDemo.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
