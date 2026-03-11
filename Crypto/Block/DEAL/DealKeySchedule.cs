@@ -64,6 +64,9 @@ namespace Crypto.Block.DEAL
             {
                 // Use wrapping powers of two for the constant block.
                 byte[] constant = ToByteArray(1L << (k - parts));
+                
+                // Initialize the round key array
+                roundKeys[k] = new byte[8];
 
                 for (int i = 0; i < 8; i++)
                 {
