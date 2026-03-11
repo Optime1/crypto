@@ -1,6 +1,6 @@
 using System;
 
-namespace dora.crypto.block.tripleDes
+namespace Crypto.Block.TripleDES
 {
     public sealed class TripleDesKeySchedule : IKeySchedule
     {

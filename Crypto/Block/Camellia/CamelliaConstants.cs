@@ -1,12 +1,12 @@
 using System;
 
-namespace dora.crypto.block.camellia;
-
-/// <summary>
-/// Constants for the Camellia block cipher (S-boxes, key generation constants).
-/// </summary>
-internal static class CamelliaConstants
+namespace Crypto.Block.Camellia
 {
+    /// <summary>
+    /// Constants for the Camellia block cipher (S-boxes, key generation constants).
+    /// </summary>
+    internal static class CamelliaConstants
+    {
     // S-boxes (4 tables, each 256 bytes)
     public static readonly byte[] S1 = new byte[256];
     public static readonly byte[] S2 = new byte[256];

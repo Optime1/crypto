@@ -1,14 +1,13 @@
 using System;
-using dora.crypto.block;
 
-namespace dora.crypto.block.camellia;
-
-/// <summary>
-/// Camellia block cipher implementation.
-/// Supports 128, 192, and 256-bit keys.
-/// </summary>
-public sealed class CamelliaBlockCipher : IBlockCipher
+namespace Crypto.Block.Camellia
 {
+    /// <summary>
+    /// Camellia block cipher implementation.
+    /// Supports 128, 192, and 256-bit keys.
+    /// </summary>
+    public sealed class CamelliaBlockCipher : IBlockCipher
+    {
     private readonly int _keySizeBytes;
     private readonly int _rounds;
     private ulong[]? _subKeys; // Round keys (KL, KR, KA derived)
