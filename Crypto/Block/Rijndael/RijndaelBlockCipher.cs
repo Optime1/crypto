@@ -17,7 +17,7 @@ namespace Crypto.Block.Rijndael
             _keySchedule = new RijndaelKeySchedule(parameters);
         }
 
-        public int BlockSize() => _parameters.BlockSize().Bytes();
+        public int BlockSize() => _parameters.GetBlockSize().Bytes();
 
         public void Init(byte[] key)
         {
@@ -102,7 +102,7 @@ namespace Crypto.Block.Rijndael
         private byte[] ShiftRows(byte[] state)
         {
             byte[] result = new byte[state.Length];
-            int blockWords = _parameters.BlockSize().Words();
+            int blockWords = _parameters.GetBlockSize().Words();
 
             for (int col = 0; col < blockWords; col++)
             {
@@ -119,7 +119,7 @@ namespace Crypto.Block.Rijndael
         private byte[] InvShiftRows(byte[] state)
         {
             byte[] result = new byte[state.Length];
-            int blockWords = _parameters.BlockSize().Words();
+            int blockWords = _parameters.GetBlockSize().Words();
 
             for (int col = 0; col < blockWords; col++)
             {
@@ -140,7 +140,7 @@ namespace Crypto.Block.Rijndael
 
             byte[] transformation = new byte[] { 2, 3, 1, 1, 1, 2, 3, 1, 1, 1, 2, 3, 3, 1, 1, 2 };
 
-            for (int col = 0; col < _parameters.BlockSize().Words(); col++)
+            for (int col = 0; col < _parameters.GetBlockSize().Words(); col++)
             {
                 for (int row = 0; row < 4; row++)
                 {
@@ -164,7 +164,7 @@ namespace Crypto.Block.Rijndael
 
             byte[] transformation = new byte[] { 0x0E, 0x0B, 0x0D, 0x09, 0x09, 0x0E, 0x0B, 0x0D, 0x0D, 0x09, 0x0E, 0x0B, 0x0B, 0x0D, 0x09, 0x0E };
 
-            for (int col = 0; col < _parameters.BlockSize().Words(); col++)
+            for (int col = 0; col < _parameters.GetBlockSize().Words(); col++)
             {
                 for (int row = 0; row < 4; row++)
                 {

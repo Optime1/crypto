@@ -37,8 +37,8 @@ namespace Crypto.Block.Rijndael
 
         public int Rounds() => Math.Max(_keySize.Words(), _blockSize.Words()) + 6;
 
-        public KeySize KeySize() => _keySize;
-        public BlockSize BlockSize() => _blockSize;
+        public RijndaelParameters.KeySize GetKeySize() => _keySize;
+        public RijndaelParameters.BlockSize GetBlockSize() => _blockSize;
         public ushort Modulus() => _modulus;
         public RijndaelSBox SBox() => _sBox;
         public RijndaelInverseSBox InverseSBox() => _inverseSBox;
