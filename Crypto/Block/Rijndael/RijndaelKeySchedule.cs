@@ -18,8 +18,8 @@ namespace Crypto.Block.Rijndael
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var keySize = _parameters.KeySize();
-            var blockSize = _parameters.BlockSize();
+            var keySize = _parameters.GetKeySize();
+            var blockSize = _parameters.GetBlockSize();
 
             if (key.Length != keySize.Bytes())
                 throw new ArgumentException("Invalid key size", nameof(key));

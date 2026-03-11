@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using System.Security.Cryptography;
 using Crypto.Block.DES;
 using Crypto.Block.TripleDES;
