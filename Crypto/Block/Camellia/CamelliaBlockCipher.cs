@@ -374,4 +374,5 @@ namespace Crypto.Block.Camellia
     private static uint ROR(uint x, int n) => (x >> n) | (x << (32 - n));
 
     #endregion
+    }
 }
