@@ -1,36 +1,38 @@
 ```
-# Build artifacts
-*.dll
+# Compiled and build artifacts
+*.o
+*.obj
 *.exe
-*.pdb
-*.config
-*.csproj.user
-bin/
-obj/
-out/
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
 packages/
-node_modules/
+lib/
+bin/
+obj/
 
-# Logs
+# Logs and temp files
 *.log
-
-# Environment
-.env
-.env.local
-*.env.*
+*.tmp
+*.swp
 
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
 
-# Testing
-TestResults/
+# Configuration
+*.userprefs
+*.suo
+*.user
+*.aps
+*.ncb
+*.ilk
+*.idb
 ```

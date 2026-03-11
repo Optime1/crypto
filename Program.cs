@@ -135,7 +135,7 @@ class Program
     {
         Console.WriteLine("--- Camellia ---");
         
-        var cipher = new CamelliaBlockCipher();
+        var cipher = new CamelliaBlockCipher(256); // 256-bit key
         byte[] key = GenerateRandomBytes(32); // 256 бит
         byte[] plaintext = GenerateRandomBytes(16); // 128 бит
 

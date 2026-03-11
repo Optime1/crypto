@@ -1,7 +1,7 @@
 using System;
-using Dora.Crypto.Block.DES;
+using Crypto.Block.DES;
 
-namespace Dora.Crypto.Block.DEAL
+namespace Crypto.Block.DEAL
 {
     /// <summary>
     /// DEAL block cipher implementation.

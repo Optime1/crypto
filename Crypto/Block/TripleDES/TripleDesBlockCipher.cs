@@ -1,12 +1,12 @@
 using System;
 
-namespace dora.crypto.block.tripleDes
+namespace Crypto.Block.TripleDES
 {
     public sealed class TripleDesBlockCipher : IBlockCipher
     {
-        private readonly TripleDesKeySchedule keySchedule = new TripleDesKeySchedule();
-        private readonly TripleDesEngine engine = new TripleDesEngine();
-        private byte[][] roundKeys;
+        private readonly TripleDesKeySchedule _keySchedule = new();
+        private readonly TripleDesEngine _engine = new();
+        private byte[][]? _roundKeys;
 
         public int BlockSize()
         {
@@ -16,25 +16,25 @@ namespace dora.crypto.block.tripleDes
         public void Init(byte[] key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
-            this.roundKeys = keySchedule.RoundKeys(key);
+            this._roundKeys = _keySchedule.RoundKeys(key);
         }
 
         public byte[] Encrypt(byte[] plaintext)
         {
-            if (roundKeys == null)
+            if (_roundKeys == null)
             {
                 throw new InvalidOperationException("Cipher not initialized");
             }
-            return engine.EncryptBlock(plaintext, roundKeys);
+            return _engine.EncryptBlock(plaintext, _roundKeys);
         }
 
         public byte[] Decrypt(byte[] ciphertext)
         {
-            if (roundKeys == null)
+            if (_roundKeys == null)
             {
                 throw new InvalidOperationException("Cipher not initialized");
             }
-            return engine.DecryptBlock(ciphertext, roundKeys);
+            return _engine.DecryptBlock(ciphertext, _roundKeys);
         }
     }
 }
