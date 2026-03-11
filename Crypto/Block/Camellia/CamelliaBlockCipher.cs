@@ -36,8 +36,8 @@ namespace Crypto.Block.Camellia
     {
         if (_subKeys == null) throw new InvalidOperationException("Cipher not initialized");
         if (plaintext == null) throw new ArgumentNullException(nameof(plaintext));
-        if (plaintext.Length != BlockSize)
-            throw new ArgumentException($"Block size must be {BlockSize} bytes", nameof(plaintext));
+        if (plaintext.Length != BlockSize())
+            throw new ArgumentException($"Block size must be {BlockSize()} bytes", nameof(plaintext));
 
         return ProcessBlock(plaintext, encrypt: true);
     }
@@ -46,8 +46,8 @@ namespace Crypto.Block.Camellia
     {
         if (_subKeys == null) throw new InvalidOperationException("Cipher not initialized");
         if (ciphertext == null) throw new ArgumentNullException(nameof(ciphertext));
-        if (ciphertext.Length != BlockSize)
-            throw new ArgumentException($"Block size must be {BlockSize} bytes", nameof(ciphertext));
+        if (ciphertext.Length != BlockSize())
+            throw new ArgumentException($"Block size must be {BlockSize()} bytes", nameof(ciphertext));
 
         return ProcessBlock(ciphertext, encrypt: false);
     }
