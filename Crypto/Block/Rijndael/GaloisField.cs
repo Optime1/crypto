@@ -36,7 +36,7 @@ namespace Crypto.Block.Rijndael
         /// <summary>
         /// Checks if a degree-8 polynomial is irreducible in GF(2^8).
         /// </summary>
-        public bool Irreducible(ushort f) => Irreducible(f);
+        public bool Irreducible(ushort f) => Irreducible((uint)f);
 
         private int Degree(uint f)
         {
