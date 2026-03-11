@@ -16,14 +16,14 @@ namespace Crypto.Block.Rijndael
         private readonly RijndaelInverseSBox _inverseSBox;
         private readonly RijndaelRcon _rcon;
 
-        public RijndaelParameters(KeySize keySize, BlockSize blockSize, ushort modulus)
+        public RijndaelParameters(RijndaelParameters.KeySize keySize, RijndaelParameters.BlockSize blockSize, ushort modulus)
         {
             var field = new GaloisField();
             if (!field.Irreducible(modulus))
                 throw new ArgumentException("Modulus may not be reducible", nameof(modulus));
 
-            _keySize = keySize ?? throw new ArgumentNullException(nameof(keySize));
-            _blockSize = blockSize ?? throw new ArgumentNullException(nameof(blockSize));
+            _keySize = keySize;
+            _blockSize = blockSize;
             _modulus = modulus;
             _sBox = new RijndaelSBox(modulus);
             _inverseSBox = new RijndaelInverseSBox(modulus);

@@ -147,7 +147,7 @@ public sealed class DesRoundFunction : IRoundFunction
             int row = ((bits & 0b100000) >> 4) | (bits & 0b000001);
             int column = (bits & 0b011110) >> 1;
 
-            output = (output << 4) | S[i][row][column];
+            output = (output << 4) | (long)S[i][row][column];
         }
 
         return new byte[]
