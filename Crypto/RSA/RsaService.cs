@@ -250,9 +250,20 @@ namespace Crypto.RSA
             int modulusByteLength = (int)((n.GetBitLength() + 7) / 8);
             byte[] padded = new byte[modulusByteLength];
             
-            // Pad with zeros if necessary
-            int copyLength = Math.Min(decrypted.Length, modulusByteLength);
-            Array.Copy(decrypted, 0, padded, modulusByteLength - copyLength, copyLength);
+            // BigInteger.ToByteArray() returns little-endian with possible extra sign byte
+            // We need to copy the actual data bytes, ignoring the extra sign byte if present
+            int dataLength = decrypted.Length;
+            if (dataLength > modulusByteLength)
+            {
+                // Extra sign byte, skip it
+                dataLength = modulusByteLength;
+            }
+            
+            // Copy in reverse order (BigInteger is little-endian, we need big-endian for PKCS#1)
+            for (int i = 0; i < dataLength; i++)
+            {
+                padded[modulusByteLength - 1 - i] = decrypted[i];
+            }
 
             // Verify and remove PKCS#1 v1.5 padding
             if (padded[0] != 0x00 || padded[1] != 0x02)
@@ -272,7 +283,7 @@ namespace Crypto.RSA
 
             if (separatorIndex < 10) // Minimum padding is 8 bytes
             {
-                throw new CryptographicException("Invalid padding");
+                throw new CryptographicException("Invalid padding: insufficient random padding");
             }
 
             byte[] result = new byte[padded.Length - separatorIndex - 1];
