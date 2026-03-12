@@ -8,12 +8,13 @@ using Crypto.Block.Rijndael;
 using Crypto.Block.Camellia;
 using Crypto.RC4;
 using Crypto.DH;
+using Crypto.RSA;
 
 namespace CryptoDemo;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.WriteLine("=== Криптографическая демонстрация ===\n");
 
@@ -37,6 +38,10 @@ class Program
 
         // Тест Diffie-Hellman
         TestDiffieHellman();
+
+        // Тест RSA
+        Console.WriteLine("\n\n");
+        await RsaDemo.RunDemoAsync();
 
         Console.WriteLine("\n=== Демонстрация завершена ===");
     }
