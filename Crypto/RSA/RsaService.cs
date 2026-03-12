@@ -142,11 +142,11 @@ namespace Crypto.RSA
                     // Ensure the number has the correct bit length
                     if (candidate.GetBitLength() < PrimeBitLength)
                     {
-                        candidate |= BigInteger.One << (PrimeBitLength - 1);
+                        candidate |= BigInteger.One << ((int)PrimeBitLength - 1);
                     }
 
                     // Ensure it's odd
-                    candidate |= 1;
+                    candidate |= BigInteger.One;
 
                     // Test for primality
                     if (IsProbablePrime(candidate))
@@ -204,7 +204,7 @@ namespace Crypto.RSA
         /// </summary>
         public static byte[] EncryptBytes(byte[] plaintext, BigInteger e, BigInteger n)
         {
-            int modulusByteLength = (n.GetBitLength() + 7) / 8;
+            int modulusByteLength = (int)((n.GetBitLength() + 7) / 8);
             // Reserve space for PKCS#1 v1.5 padding (minimum 11 bytes overhead)
             int maxMessageLength = modulusByteLength - 11;
 
@@ -219,7 +219,8 @@ namespace Crypto.RSA
             padded[1] = 0x02;
 
             // Generate random non-zero padding bytes
-            byte[] padding = new byte[maxMessageLength - plaintext.Length];
+            int paddingLength = maxMessageLength - plaintext.Length;
+            byte[] padding = new byte[paddingLength];
             Rng.GetBytes(padding);
             for (int i = 0; i < padding.Length; i++)
             {
@@ -246,7 +247,7 @@ namespace Crypto.RSA
             byte[] decrypted = decryptedInt.ToByteArray();
 
             // Remove padding
-            int modulusByteLength = (n.GetBitLength() + 7) / 8;
+            int modulusByteLength = (int)((n.GetBitLength() + 7) / 8);
             byte[] padded = new byte[modulusByteLength];
             
             // Pad with zeros if necessary

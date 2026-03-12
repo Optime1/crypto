@@ -36,12 +36,12 @@ namespace Crypto.RSA
                 if (phi.HasValue)
                 {
                     // Verify by attempting to factor N
-                    var factors = FactorFromPhi(n, phi.Value);
-                    if (factors.HasValue)
+                    Tuple<BigInteger, BigInteger>? factors = FactorFromPhi(n, phi.Value);
+                    if (factors != null)
                     {
                         Console.WriteLine($"Wiener's attack successful!");
                         Console.WriteLine($"Recovered d: {d}");
-                        Console.WriteLine($"Factors: p={factors.Value.Item1}, q={factors.Value.Item2}");
+                        Console.WriteLine($"Factors: p={factors.Item1}, q={factors.Item2}");
                         return d;
                     }
                 }
@@ -151,7 +151,7 @@ namespace Crypto.RSA
             if (discriminant < 0) return null;
             
             BigInteger? sqrtDisc = NumberTheory.ISqrt(discriminant);
-            if (sqrtDisc == null) return null;
+            if (!sqrtDisc.HasValue) return null;
             
             // p = (sum + sqrt(disc)) / 2, q = (sum - sqrt(disc)) / 2
             if ((sum + sqrtDisc.Value) % 2 != 0) return null;
@@ -173,8 +173,11 @@ namespace Crypto.RSA
         /// </summary>
         public static bool IsVulnerable(BigInteger d, BigInteger n)
         {
-            BigInteger? nFourthRoot = NumberTheory.ISqrt(NumberTheory.ISqrt(n) ?? 0);
-            if (nFourthRoot == null) return false;
+            BigInteger? nSqrt = NumberTheory.ISqrt(n);
+            if (!nSqrt.HasValue) return false;
+            
+            BigInteger? nFourthRoot = NumberTheory.ISqrt(nSqrt.Value);
+            if (!nFourthRoot.HasValue) return false;
             
             BigInteger limit = nFourthRoot.Value / 3;
             return d < limit;
