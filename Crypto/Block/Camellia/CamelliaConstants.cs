@@ -29,7 +29,7 @@ namespace Crypto.Block.Camellia
     private static void InitializeSBoxes()
     {
         // Base S1 definition (hex values from spec)
-        byte[] s1Data = new byte[]
+        byte[] s1Data = new byte[256]
         {
             0x70, 0x73, 0x77, 0x7b, 0x7f, 0x83, 0x87, 0x8b, 0x8f, 0x93, 0x97, 0x9b, 0x9f, 0xa3, 0xa7, 0xab,
             0xaf, 0xb3, 0xb7, 0xbb, 0xbf, 0xc3, 0xc7, 0xcb, 0xcf, 0xd3, 0xd7, 0xdb, 0xdf, 0xe3, 0xe7, 0xeb,
@@ -55,8 +55,8 @@ namespace Crypto.Block.Camellia
         {
             byte val = S1[i];
             S2[i] = RotateLeftByte(val, 1);
-            S3[i] = RotateLeftByte(val, 8); // Identity for 8-bit
-            S4[i] = RotateLeftByte(val, 1); // Same as S2
+            S3[i] = RotateLeftByte(val, 7);
+            S4[i] = RotateLeftByte(S3[i], 1);
         }
     }
 
