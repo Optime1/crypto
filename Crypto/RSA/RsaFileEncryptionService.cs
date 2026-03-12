@@ -140,7 +140,7 @@ namespace Crypto.RSA
         {
             byte[] fileContent = File.ReadAllBytes(inputPath);
             
-            int modulusByteLength = (_keyPair.N.GetBitLength() + 7) / 8;
+            int modulusByteLength = (int)((_keyPair.N.GetBitLength() + 7) / 8);
             int maxChunkSize = modulusByteLength - 11; // PKCS#1 v1.5 padding overhead
 
             if (fileContent.Length > maxChunkSize * 1000)
@@ -229,7 +229,8 @@ namespace Crypto.RSA
 
             // Divide file into blocks for parallel encryption
             int blockCount = degreeOfParallelism;
-            long blockSize = (fileSize + blockCount - 1) / blockCount;
+            long blockSizeLong = (fileSize + blockCount - 1) / blockCount;
+            int blockSize = (int)blockSizeLong;
 
             var encryptedBlocks = new byte[blockCount][];
             var blockSizes = new int[blockCount];
@@ -243,7 +244,7 @@ namespace Crypto.RSA
 
                 Parallel.For(0, blockCount, i =>
                 {
-                    long start = i * blockSize;
+                    long start = i * (long)blockSize;
                     long end = Math.Min(start + blockSize, fileSize);
                     int size = (int)(end - start);
 
@@ -288,9 +289,9 @@ namespace Crypto.RSA
                 WriteInt32(outputStream, blockCount);
 
                 // Write block sizes
-                foreach (int blockSize in blockSizes)
+                for (int i = 0; i < blockSizes.Length; i++)
                 {
-                    WriteInt32(outputStream, blockSize);
+                    WriteInt32(outputStream, blockSizes[i]);
                 }
 
                 // Write encrypted blocks

@@ -49,7 +49,7 @@ namespace CryptoDemo
             );
 
             Console.WriteLine("Generating RSA key pair...");
-            var keyPair = keyGen.GenerateKeys();
+            var keyPair = await Task.Run(() => keyGen.GenerateKeys());
 
             Console.WriteLine($"\nPublic Key (N, E):");
             Console.WriteLine($"  N = {keyPair.N}");
@@ -63,7 +63,7 @@ namespace CryptoDemo
 
             // Try Wiener's attack (should fail on secure keys)
             Console.WriteLine("\nAttempting Wiener's attack...");
-            var recoveredD = WienerAttack.Attack(keyPair.E, keyPair.N);
+            var recoveredD = await Task.Run(() => WienerAttack.Attack(keyPair.E, keyPair.N));
             
             if (recoveredD.HasValue && recoveredD.Value == keyPair.D)
             {
@@ -85,7 +85,7 @@ namespace CryptoDemo
                 0.9999999,
                 512
             );
-            var keyPair = keyGen.GenerateKeys();
+            var keyPair = await Task.Run(() => keyGen.GenerateKeys());
 
             // Test message
             string originalMessage = "Hello, RSA!";
@@ -95,11 +95,11 @@ namespace CryptoDemo
             Console.WriteLine($"Message bytes: {BitConverter.ToString(messageBytes)}");
 
             // Encrypt
-            byte[] encrypted = RsaService.EncryptBytes(messageBytes, keyPair.E, keyPair.N);
+            byte[] encrypted = await Task.Run(() => RsaService.EncryptBytes(messageBytes, keyPair.E, keyPair.N));
             Console.WriteLine($"\nEncrypted: {BitConverter.ToString(encrypted)}");
 
             // Decrypt
-            byte[] decrypted = RsaService.DecryptBytes(encrypted, keyPair.D, keyPair.N);
+            byte[] decrypted = await Task.Run(() => RsaService.DecryptBytes(encrypted, keyPair.D, keyPair.N));
             string decryptedMessage = System.Text.Encoding.UTF8.GetString(decrypted);
             Console.WriteLine($"Decrypted: \"{decryptedMessage}\"");
 
@@ -136,7 +136,7 @@ namespace CryptoDemo
             Console.WriteLine($"\nVulnerable to Wiener's Attack: {(isVulnerable ? "YES" : "NO")}");
 
             Console.WriteLine("\nAttempting Wiener's attack on vulnerable key...");
-            var recoveredD = WienerAttack.Attack(e, n);
+            var recoveredD = await Task.Run(() => WienerAttack.Attack(e, n));
 
             if (recoveredD.HasValue)
             {
@@ -161,7 +161,7 @@ namespace CryptoDemo
                 0.9999999,
                 1024
             );
-            var keyPair = keyGen.GenerateKeys();
+            var keyPair = await Task.Run(() => keyGen.GenerateKeys());
 
             var encryptionService = new RsaFileEncryptionService(keyPair);
 
@@ -226,7 +226,7 @@ namespace CryptoDemo
                 0.9999999,
                 1024
             );
-            var keyPair = keyGen.GenerateKeys();
+            var keyPair = await Task.Run(() => keyGen.GenerateKeys());
 
             var encryptionService = new RsaFileEncryptionService(keyPair);
 

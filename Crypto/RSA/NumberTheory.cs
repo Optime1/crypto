@@ -186,7 +186,8 @@ namespace Crypto.RSA
             if (n.Sign < 0) return null;
             if (n == 0 || n == 1) return n;
 
-            BigInteger x0 = BigInteger.One << ((n.GetBitLength() + 1) / 2);
+            int bitLength = (int)((n.GetBitLength() + 1) / 2);
+            BigInteger x0 = BigInteger.One << (int)bitLength;
             BigInteger x1 = (n / x0 + x0) / 2;
 
             while (x1 < x0)
