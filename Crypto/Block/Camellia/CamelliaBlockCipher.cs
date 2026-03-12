@@ -129,9 +129,9 @@ namespace Crypto.Block.Camellia
             vl = vr;
             vr = tmp;
 
-            // Final whitening
-            vl ^= _subKeys[_rounds * 2 + 2 + 12]; // After FL keys
-            vr ^= _subKeys[_rounds * 2 + 2 + 12 + 1];
+            // Final whitening with KW3, KW4 (at indices 50, 51)
+            vl ^= _subKeys[50];
+            vr ^= _subKeys[51];
 
             byte[] output = new byte[16];
             UlongToBytes(vl, output, 0);
@@ -244,20 +244,15 @@ namespace Crypto.Block.Camellia
             // Actually looking at spec: FL has kl_i, kr_i for i=1..6
             // So we need 12 FL keys (6 pairs of kl, kr)
             
-            // Layout: [KW1, KW2, KW3, KW4] + [36 round keys] + [12 FL keys] = 52 keys
+            // Layout: [KW1, KW2] + [36 round keys] + [12 FL keys] + [KW3, KW4] = 52 keys
             ulong[] subKeys = new ulong[52];
             int idx = 0;
 
-            // KW1, KW2 from KL
+            // KW1, KW2 from KL (initial whitening)
             subKeys[idx++] = BytesToUlong(KL, 0);
             subKeys[idx++] = BytesToUlong(KL, 8);
 
-            // KW3, KW4 from KL<<<60 (128-bit) or KR<<<60 (192/256-bit)
-            byte[] kwSrc = (_keySizeBytes == 16) ? RotateLeft128(KL, 60) : RotateLeft128(KR, 60);
-            subKeys[idx++] = BytesToUlong(kwSrc, 0);
-            subKeys[idx++] = BytesToUlong(kwSrc, 8);
-
-            // Round keys generation
+            // Round keys generation (indices 2-37)
             // Pattern depends on key size
             int[] shifts = { 0, 0, 15, 15, 30, 30, 45, 45, 60, 60, 77, 77, 94, 94, 111, 111, 128, 128 };
             
@@ -305,7 +300,7 @@ namespace Crypto.Block.Camellia
             }
 
             // FL keys: derived from KL (128-bit) or KR (192/256-bit) with rotations
-            // 6 pairs needed (for rounds 6, 12, 18)
+            // 6 pairs needed (for rounds 6, 12, 18), indices 38-49
             byte[] flSrc = (_keySizeBytes == 16) ? KL : KR;
             int[] flShifts = { 0, 30, 60, 90, 120, 150 };
             
@@ -315,6 +310,12 @@ namespace Crypto.Block.Camellia
                 subKeys[idx++] = BytesToUlong(rotated, 0);
                 subKeys[idx++] = BytesToUlong(rotated, 8);
             }
+
+            // KW3, KW4 (final whitening) from KL<<<60 (128-bit) or KR<<<60 (192/256-bit)
+            // Indices 50, 51
+            byte[] kwSrc = (_keySizeBytes == 16) ? RotateLeft128(KL, 60) : RotateLeft128(KR, 60);
+            subKeys[idx++] = BytesToUlong(kwSrc, 0);
+            subKeys[idx++] = BytesToUlong(kwSrc, 8);
 
             return subKeys;
         }
